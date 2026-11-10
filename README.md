@@ -1,5 +1,10 @@
 # Web Application Firewall Home Lab — SafeLine WAF
 
+**From a SOC perspective:** I exploited SQL injection in a vulnerable web app,
+then put SafeLine WAF in front of it and confirmed the same payload was blocked,
+logged and classified as SQL injection, alongside rate limiting, IP deny rules
+and an authentication gateway.
+
 A hands-on attack-and-defend lab built to observe how a Web Application Firewall
 detects and blocks web attacks against a deliberately vulnerable application.
 The lab pairs an attacker machine (Kali Linux) against a target web server
@@ -152,6 +157,18 @@ WAF.
 
 ---
 
+## MITRE ATT&CK mapping
+
+| Technique | ID | Where it appears in this lab | Mitigated by |
+|-----------|----|------------------------------|--------------|
+| Exploit Public-Facing Application | T1190 | SQL injection against DVWA (`admin' OR '1'='1`) | Semantic detection blocks the payload |
+| Endpoint Denial of Service: Service Exhaustion Flood | T1499.002 | HTTP flood with `ab -n 500 -c 20` | Rate limiting bans the source IP |
+
+The IP deny rule and authentication gateway are general controls rather than
+responses to a single technique: they limit who can reach the application at all.
+
+---
+
 ## Challenges
 
 The guide I followed was written for x86 hosts. Running it on an Apple Silicon
@@ -206,6 +223,14 @@ of the actual learning happened.
 - Reading logs (Apache error log, WAF detection log) was essential to
   diagnosing every problem in this lab. The error message is usually more
   useful than the symptom.
+
+## Next improvements
+
+- Forward SafeLine detection logs to a SIEM (e.g. Microsoft Sentinel or Wazuh)
+  and write an alert rule for repeated blocked requests from one source.
+- Test bypass attempts (encoded or obfuscated SQLi payloads) to see where
+  semantic detection stops working.
+- Repeat the lab with DVWA set to Medium and High security levels.
 
 ---
 
